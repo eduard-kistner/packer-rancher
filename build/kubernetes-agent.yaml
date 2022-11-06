@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+    - name: packer
+      image: registry.kistner-media.de/docker/packer/main
+      command:
+        - sleep
+      securityContext:
+        privileged: true
+      args:
+        - 1d
+      tty: true
+    - name: sonar-scanner
+      image: sonarsource/sonar-scanner-cli
+      command:
+        - sleep
+      args:
+        - 1d
+      volumeMounts:
+        - mountPath: "/usr/src"
+          name: "workspace-volume"
+          readOnly: false

@@ -1,0 +1,95 @@
+#!/usr/bin/env groovy
+
+import de.kistner_media.ScmOrigin
+
+def dockerImage
+def buildImage
+def project          = ''
+def sonarQubeEnv     = 'SonarQube'
+def sonarQubeProject = ''
+
+pipeline {
+    agent {
+        kubernetes {
+            yamlFile 'kubernetes-agent.yaml'
+        }
+    }
+
+    options {
+        buildDiscarder(
+            logRotator(
+                daysToKeepStr: '30',
+                numToKeepStr: '10',
+                artifactDaysToKeepStr: '30',
+                artifactNumToKeepStr: '10'
+            )
+        )
+        disableConcurrentBuilds()
+        gitLabConnection('GitLab')
+        gitlabBuilds(builds: ['static-code-test', 'build'])
+    }
+
+    stages {
+        stage('Init') {
+            steps {
+                script {
+                    def scmOrigin = new ScmOrigin(env.GIT_URL)
+                    scmOrigin.setCurrentEnvironment(BRANCH_NAME)
+
+                    project             = scmOrigin.getPathAsArray().join('-')
+                    sonarQubeProject    = project + '-' + scmOrigin.getCurrentEnvironment()
+                    dockerImage         = scmOrigin.getDockerImagePath() + '/' + scmOrigin.getCurrentEnvironment()
+                    buildImage          = dockerImage + ':' + env.BUILD_NUMBER
+                    env.PKR_VAR_build   = env.BUILD_NUMBER
+                }
+            }
+        }
+
+        stage('Static test and build') {
+            parallel {
+                stage('Static Code Test') {
+                    steps {
+                        gitlabCommitStatus('static-code-test') {
+                            script {
+                                withSonarQubeEnv(sonarQubeEnv) {
+                                    container('sonar-scanner') {
+                                        script {
+                                            sh "sonar-scanner -Dsonar.projectKey=${sonarQubeProject} -Dsonar.projectVersion=${BUILD_NUMBER}"
+                                        }
+                                    }
+                                }
+
+                                timeout(time: 1, unit: 'HOURS') {
+                                    def qg = waitForQualityGate()
+                                    if (qg.status != 'OK') {
+                                        error "Pipeline aborted due to quality gate failure: ${qg.status}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                stage('Build Container') {
+                    steps {
+                        gitlabCommitStatus('build') {
+                            withCredentials([string(credentialsId: 'vagrantup', variable: 'PKR_VAR_access_token')]) {
+                                container('packer') {
+                                    script {
+                                        sh "packer build ./packer.pkr.hcl";
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            emailext body: '$DEFAULT_CONTENT', recipientProviders: [requestor(), upstreamDevelopers()], subject: '$DEFAULT_SUBJECT'
+        }
+    }
+}
