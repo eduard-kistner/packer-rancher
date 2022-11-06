@@ -5,7 +5,7 @@ spec:
     - name: packer
       image: registry.kistner-media.de/docker/packer/main:latest
       imagePullSecrets:
-        - name: registry-kistner-media
+        - name: "registry-kistner-media"
       command:
         - sleep
       securityContext:
