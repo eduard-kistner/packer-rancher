@@ -2,8 +2,8 @@ apiVersion: v1
 kind: Pod
 spec:
   containers:
-    - name: packer
-      image: podman
+    - name: podman
+      image: quay.io/podman/stable
       command:
         - sleep
       securityContext:
