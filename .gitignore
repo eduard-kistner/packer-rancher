@@ -9,3 +9,5 @@ crash.log
 *.box
 .idea/
 .vagrant/
+.composer/
+output-debian11/

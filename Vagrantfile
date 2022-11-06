@@ -64,5 +64,18 @@ Vagrant.configure(VAGRANFILE_API_VERSION) do |config|
     end
 
     config.hostmanager.enabled           = false
+    config.hostmanager.manage_host       = true
+    config.hostmanager.ignore_private_ip = false
+
     config.vm.network 'private_network', type: :dhcp
+
+    config.hostmanager.aliases     = [PROJECT_DOMAIN, 'dash.' + PROJECT_DOMAIN, 'mysql.' + PROJECT_DOMAIN, 'proc.' + PROJECT_DOMAIN]
+    config.hostmanager.ip_resolver = proc do |vm, resolving_vm|
+        vm.provider.driver.read_guest_ip(1)
+    end
+
+    ### This needs to be set after all docker / k3s stuff is up as otherwise we get an wrong IP
+    if (not isBoxProvisioned)
+        config.vm.provision :hostmanager
+    end
 end
