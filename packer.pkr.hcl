@@ -1,3 +1,11 @@
+variable "access_token" {
+  default = env("TOKEN")
+}
+
+variable "build" {
+  default = env("BUILD_NUMBER")
+}
+
 source "vagrant" "debian11" {
   add_force    = true
   communicator = "ssh"

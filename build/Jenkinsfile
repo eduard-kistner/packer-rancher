@@ -40,7 +40,6 @@ pipeline {
                     sonarQubeProject    = project + '-' + scmOrigin.getCurrentEnvironment()
                     dockerImage         = scmOrigin.getDockerImagePath() + '/' + scmOrigin.getCurrentEnvironment()
                     buildImage          = dockerImage + ':' + env.BUILD_NUMBER
-                    env.PKR_VAR_build   = env.BUILD_NUMBER
                 }
             }
         }
@@ -73,12 +72,12 @@ pipeline {
                 stage('Build Container') {
                     steps {
                         gitlabCommitStatus('build') {
-                            withCredentials([string(credentialsId: 'vagrantup', variable: 'PKR_VAR_access_token')]) {
+                            withCredentials([string(credentialsId: 'vagrantup', variable: 'access_token')]) {
                                 withCredentials([usernamePassword(credentialsId: env.GITLAB_CREDENTIALS, usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
                                     container('podman') {
                                         script {
                                             sh "podman login -u $GIT_USERNAME -p $GIT_PASSWORD $env.DOCKER_REGISTRY_URI"
-                                            sh "podman run --rm -v ./:/workspace -w /workspace registry.kistner-media.de/docker/packer/main packer build ./packer.pkr.hcl";
+                                            sh "podman run --rm -v ./:/workspace -w /workspace -e TOKEN=$access_token $env.DOCKER_REGISTRY_URI/docker/packer/main packer build ./packer.pkr.hcl";
                                         }
                                     }
                                 }
