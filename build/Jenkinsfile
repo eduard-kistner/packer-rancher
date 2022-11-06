@@ -11,7 +11,7 @@ def sonarQubeProject = ''
 pipeline {
     agent {
         kubernetes {
-            yamlFile 'kubernetes-agent.yaml'
+            yamlFile 'build/kubernetes-agent.yaml'
         }
     }
 
