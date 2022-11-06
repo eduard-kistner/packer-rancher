@@ -3,7 +3,7 @@ kind: Pod
 spec:
   containers:
     - name: packer
-      image: registry.kistner-media.de/docker/packer/main
+      image: registry.kistner-media.de/docker/packer/main:latest
       imagePullSecrets:
         - name: registry-kistner-media
       command:
