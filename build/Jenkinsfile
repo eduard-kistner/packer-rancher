@@ -74,9 +74,12 @@ pipeline {
                     steps {
                         gitlabCommitStatus('build') {
                             withCredentials([string(credentialsId: 'vagrantup', variable: 'PKR_VAR_access_token')]) {
-                                container('packer') {
-                                    script {
-                                        sh "packer build ./packer.pkr.hcl";
+                                withCredentials([usernamePassword(credentialsId: env.GITLAB_CREDENTIALS, usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                                    container('podman') {
+                                        script {
+                                            sh "podman login -u $GIT_USERNAME -p $GIT_PASSWORD $env.DOCKER_REGISTRY_URI"
+                                            sh "podman run --rm -v ./:/workspace -w /workspace registry.kistner-media.de/docker/packer/main packer build ./packer.pkr.hcl";
+                                        }
                                     }
                                 }
                             }
