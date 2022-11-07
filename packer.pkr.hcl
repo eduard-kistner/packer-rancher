@@ -18,7 +18,10 @@ build {
 
   provisioner "shell" {
     execute_command = "echo 'vagrant' | {{ .Vars }} sudo -S -E bash '{{ .Path }}'"
-    script          = "scripts/setup.sh"
+    scripts         = [
+        "scripts/install_k8s_tools.sh",
+        "scripts/install_rancher.sh"
+    ]
   }
 
   post-processor "vagrant" {

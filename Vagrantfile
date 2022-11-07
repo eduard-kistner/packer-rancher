@@ -45,7 +45,7 @@ Vagrant.configure(VAGRANFILE_API_VERSION) do |config|
         if (not isBoxProvisioned)
             v.name = PROJECT_KEY
         end
-        v.memory = 16384
+        v.memory = 4096
         v.cpus   = 4
     end
 
@@ -73,6 +73,10 @@ Vagrant.configure(VAGRANFILE_API_VERSION) do |config|
     config.hostmanager.ip_resolver = proc do |vm, resolving_vm|
         vm.provider.driver.read_guest_ip(1)
     end
+
+    config.vm.provision :shell,
+        :path => 'vagrant/setup.sh',
+        :args => [GIT_USER, GIT_PASS, PROJECT_DOMAIN]
 
     ### This needs to be set after all docker / k3s stuff is up as otherwise we get an wrong IP
     if (not isBoxProvisioned)
