@@ -11,6 +11,7 @@ source "vagrant" "debian11" {
   communicator = "ssh"
   provider     = "virtualbox"
   source_path  = "generic/debian11"
+  template     = "config/Vagrantfile.template"
 }
 
 build {
@@ -19,8 +20,7 @@ build {
   provisioner "shell" {
     execute_command = "echo 'vagrant' | {{ .Vars }} sudo -S -E bash '{{ .Path }}'"
     scripts         = [
-        "scripts/install_k8s_tools.sh",
-        "scripts/install_rancher.sh"
+        "scripts/install.sh"
     ]
   }
 
@@ -30,7 +30,7 @@ build {
 
   post-processor "vagrant-cloud" {
     access_token = "${var.access_token}"
-    box_tag      = "el8ctric/docker"
+    box_tag      = "el8ctric/rancher"
     version      = "0.1.${var.build}"
   }
 }

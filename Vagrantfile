@@ -8,9 +8,9 @@ SCM_REMOTE_ORIGIN_URI  = URI.parse(`git config --get remote.origin.url`.strip!)
 SCM_BRANCH             = `git rev-parse --abbrev-ref HEAD`.downcase.tr("/", "-").tr(".", "-").strip!
 
 if SCM_REMOTE_ORIGIN_URI.path.start_with?('/') then
-    SCM_REMOTE_ORIGIN_PATH = SCM_REMOTE_ORIGIN_URI.path[1..-1].gsub('.git', '')
+    SCM_REMOTE_ORIGIN_PATH = SCM_REMOTE_ORIGIN_URI.path[1..-1].gsub('.git', '').downcase
 else
-    SCM_REMOTE_ORIGIN_PATH = SCM_REMOTE_ORIGIN_URI.path.gsub('.git', '')
+    SCM_REMOTE_ORIGIN_PATH = SCM_REMOTE_ORIGIN_URI.path.gsub('.git', '').downcase
 end
 
 PROJECT        = SCM_REMOTE_ORIGIN_PATH.tr("/", "-")
@@ -25,8 +25,6 @@ if Vagrant::Util::Platform.windows? then
 else
     GIT_USER         = `awk '/git.kistner-media.de/{getline; print $2; exit;}' $HOME/.netrc`
     GIT_PASS         = `awk '/git.kistner-media.de/{getline; getline; print $2; exit;}' $HOME/.netrc`
-
-    `if [ -f $HOME/.composer/auth.json ] && [ ! -d ./.composer ]; then mkdir ./.composer/ && cp $HOME/.composer/auth.json ./.composer/; fi;`
 end
 
 ################################################
@@ -52,17 +50,13 @@ Vagrant.configure(VAGRANFILE_API_VERSION) do |config|
     ###############################################################
     #        We use debian in production and so we do here        #
     ###############################################################
-    config.vm.box = "el8ctric/docker"
+    config.vm.box = "el8ctric/rancher"
     config.vm.synced_folder ".", "/vagrant", type: "virtualbox"
 
     ###############################################################
     #          DNS config and create a private network,           #
     #          which allows host-only access to machine           #
     ###############################################################
-    if (not isBoxProvisioned)
-        config.vm.hostname = PROJECT_KEY
-    end
-
     config.hostmanager.enabled           = false
     config.hostmanager.manage_host       = true
     config.hostmanager.ignore_private_ip = false
@@ -78,7 +72,7 @@ Vagrant.configure(VAGRANFILE_API_VERSION) do |config|
         :path => 'vagrant/setup.sh',
         :args => [GIT_USER, GIT_PASS, PROJECT_DOMAIN]
 
-    ### This needs to be set after all docker / k3s stuff is up as otherwise we get an wrong IP
+    ### This needs to be set after all k8s stuff is up as otherwise we get an wrong IP
     if (not isBoxProvisioned)
         config.vm.provision :hostmanager
     end

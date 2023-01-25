@@ -1,19 +1,23 @@
 #!/usr/bin/env bash
 set -e
 
-echo "wait until rancher is ready"
+GIT_USER="${1}"
+GIT_PASS="${2}"
+DOMAIN="${3}"
+
+echo "Wait until rancher is up and ready"
 while true; do
   sleep 10
-  docker exec -t rancher curl -sLk https://127.0.0.1/ping && break
+  ### Getting rancher inside the loop is needed, as it could not be up yet
+  RANCHER_POD=$(kubectl -n cattle-system get pods -l app=rancher | grep '1/1' | head -1 | awk '{ print $1 }')
+  kubectl -n cattle-system exec ${RANCHER_POD} -- curl -sLk https://127.0.0.1/ping && break
+  echo "Rancher is not up"
 done
 
-echo "create a Token"
-while true; do
-	TOKEN=`docker exec -t rancher curl "https://127.0.0.1/v3-public/localProviders/local?action=login" -H 'content-type: application/json' --data-binary '{"username":"admin","password":"admin"}' --insecure | jq -r .token`
-  if [ "$TOKEN" != "null" ]; then break; else sleep 5; fi
-done
+### Needs some more time as otherwise we get an error: the server doesn't have a resource type "ing"
+sleep 30
 
-### Setup cluster access @see https://rancher.com/docs/k3s/latest/en/cluster-access/
-docker exec -t rancher curl -X POST 'https://127.0.0.1/v3/clusters/local?action=generateKubeconfig' -H "Authorization: Bearer $TOKEN" --insecure | jq -r .config > /opt/k8s.yaml
-mkdir /home/vagrant/.kube && cp /opt/k8s.yaml /home/vagrant/.kube/config && chown -R vagrant: /home/vagrant/.kube
-mkdir /root/.kube && cp /opt/k8s.yaml /root/.kube/config
+### set hostname for rancher
+kubectl patch -n cattle-system ing/rancher --type=json -p='[{"op": "replace", "path": "/spec/rules/0/host", "value":"dash.'${DOMAIN}'"}]'
+kubectl patch -n cattle-system ing/rancher --type=json -p='[{"op": "replace", "path": "/spec/tls/0/hosts/0", "value":"dash.'${DOMAIN}'"}]'
+
