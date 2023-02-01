@@ -63,14 +63,18 @@ Vagrant.configure(VAGRANFILE_API_VERSION) do |config|
 
     config.vm.network 'private_network', type: :dhcp
 
-    config.hostmanager.aliases     = [PROJECT_DOMAIN, 'dash.' + PROJECT_DOMAIN, 'mysql.' + PROJECT_DOMAIN, 'proc.' + PROJECT_DOMAIN]
+    config.hostmanager.aliases     = [PROJECT_DOMAIN, 'dash.' + PROJECT_DOMAIN]
     config.hostmanager.ip_resolver = proc do |vm, resolving_vm|
         vm.provider.driver.read_guest_ip(1)
     end
 
     config.vm.provision :shell,
+            :path => 'vagrant/wait-for-rancher.sh',
+            :run => 'always'
+
+    config.vm.provision :shell,
         :path => 'vagrant/setup.sh',
-        :args => [GIT_USER, GIT_PASS, PROJECT_DOMAIN]
+        :args => [PROJECT_DOMAIN]
 
     ### This needs to be set after all k8s stuff is up as otherwise we get an wrong IP
     if (not isBoxProvisioned)
