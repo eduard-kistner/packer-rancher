@@ -12,7 +12,7 @@ echo "We need legacyiptables in Debian 10 for DNS and stuff to work"
 update-alternatives --set iptables /usr/sbin/iptables-legacy
 
 ### Install RKE2 server
-curl -sfL https://get.rke2.io | INSTALL_RKE2_CHANNEL=v1.24.4+rke2r1 sh -
+curl -sfL https://get.rke2.io | INSTALL_RKE2_CHANNEL=stable sh -
 systemctl enable --now rke2-server.service
 
 ### There is kubectl and some useful tools in rke2 directory
@@ -29,7 +29,7 @@ helm repo add rancher-stable https://releases.rancher.com/server-charts/stable
 helm repo update
 
 # Install the cert-manager Helm chart
-helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.7.1 --set installCRDs=true --wait --timeout 20m
+helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.13.3 --set installCRDs=true --wait --timeout 20m
 
 ### Give the system some time as otherwise the ingress throws errors
 ### @todo Add check if systems are up
@@ -47,7 +47,7 @@ while true; do
 done
 
 ### Add local-path storage class
-kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.23/deploy/local-path-storage.yaml
+kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.26/deploy/local-path-storage.yaml
 kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
 sleep 30
