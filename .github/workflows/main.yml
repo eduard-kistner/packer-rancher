@@ -38,7 +38,7 @@ jobs:
           TOKEN: ${{ secrets.TOKEN }}
 
       - name: Build Artifact
-        run: packer build -color=false -on-error=abort ./image.pkr.hcl
+        run: packer build -color=false -on-error=abort ./packer.pkr.hcl
         env:
           PACKER_GITHUB_API_TOKEN: ${{ secrets.PACKER_GITHUB_API_TOKEN }}
           HCP_CLIENT_ID: ${{ secrets.HCP_CLIENT_ID }}
