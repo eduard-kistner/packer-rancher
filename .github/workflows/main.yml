@@ -35,6 +35,7 @@ jobs:
           PACKER_GITHUB_API_TOKEN: ${{ secrets.PACKER_GITHUB_API_TOKEN }}
           HCP_CLIENT_ID: ${{ secrets.HCP_CLIENT_ID }}
           HCP_CLIENT_SECRET: ${{ secrets.HCP_CLIENT_SECRET }}
+          TOKEN: ${{ secrets.TOKEN }}
 
       - name: Build Artifact
         run: packer build -color=false -on-error=abort ./image.pkr.hcl
@@ -42,4 +43,5 @@ jobs:
           PACKER_GITHUB_API_TOKEN: ${{ secrets.PACKER_GITHUB_API_TOKEN }}
           HCP_CLIENT_ID: ${{ secrets.HCP_CLIENT_ID }}
           HCP_CLIENT_SECRET: ${{ secrets.HCP_CLIENT_SECRET }}
+          TOKEN: ${{ secrets.TOKEN }}
           HCP_PACKER_BUILD_FINGERPRINT: "run.id.${{ github.run_id }}.run.attempt.${{ github.run_attempt }}"
