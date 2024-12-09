@@ -2,6 +2,7 @@ name: packer
 
 on:
   push:
+    main
 
 env:
   PRODUCT_VERSION: "latest"
@@ -29,6 +30,10 @@ jobs:
       - name: Run `packer validate`
         id: validate
         run: "packer validate ./packer.pkr.hcl"
+        env:
+          PACKER_GITHUB_API_TOKEN: ${{ secrets.PACKER_GITHUB_API_TOKEN }}
+          HCP_CLIENT_ID: ${{ secrets.HCP_CLIENT_ID }}
+          HCP_CLIENT_SECRET: ${{ secrets.HCP_CLIENT_SECRET }}
 
       - name: Build Artifact
         run: packer build -color=false -on-error=abort ./image.pkr.hcl
