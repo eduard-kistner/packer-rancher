@@ -2,7 +2,8 @@ name: packer
 
 on:
   push:
-    main
+    branches:
+      - 'main'
 
 env:
   PRODUCT_VERSION: "latest"
