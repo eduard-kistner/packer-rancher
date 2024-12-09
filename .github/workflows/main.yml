@@ -23,6 +23,8 @@ jobs:
       - name: Run `packer init`
         id: init
         run: "packer init ./packer.pkr.hcl"
+        env:
+          PACKER_GITHUB_API_TOKEN: ${{ secrets.PACKER_GITHUB_API_TOKEN }}
 
       - name: Run `packer validate`
         id: validate
@@ -31,6 +33,7 @@ jobs:
       - name: Build Artifact
         run: packer build -color=false -on-error=abort ./image.pkr.hcl
         env:
+          PACKER_GITHUB_API_TOKEN: ${{ secrets.PACKER_GITHUB_API_TOKEN }}
           HCP_CLIENT_ID: ${{ secrets.HCP_CLIENT_ID }}
           HCP_CLIENT_SECRET: ${{ secrets.HCP_CLIENT_SECRET }}
           HCP_PACKER_BUILD_FINGERPRINT: "run.id.${{ github.run_id }}.run.attempt.${{ github.run_attempt }}"
