@@ -19,7 +19,7 @@ source "vagrant" "debian11" {
   add_force    = true
   communicator = "ssh"
   provider     = "virtualbox"
-  source_path  = "generic/debian11"
+  source_path  = "generic/debian12"
   template     = "config/Vagrantfile.template"
 }
 
