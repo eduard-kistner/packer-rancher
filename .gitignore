@@ -10,4 +10,4 @@ crash.log
 .idea/
 .vagrant/
 .composer/
-output-debian11/
+packer_build/

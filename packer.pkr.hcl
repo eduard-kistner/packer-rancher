@@ -6,6 +6,16 @@ variable "build" {
   default = env("BUILD_NUMBER")
 }
 
+variable "hcp_client_id" {
+  type    = string
+  default = "${env("HCP_CLIENT_ID")}"
+}
+
+variable "hcp_client_secret" {
+  type    = string
+  default = "${env("HCP_CLIENT_SECRET")}"
+}
+
 packer {
   required_plugins {
     vagrant = {
@@ -15,16 +25,17 @@ packer {
   }
 }
 
-source "vagrant" "debian11" {
+source "vagrant" "debian12" {
   add_force    = true
   communicator = "ssh"
   provider     = "virtualbox"
   source_path  = "generic/debian12"
   template     = "config/Vagrantfile.template"
+  output_dir   = "packer_build"
 }
 
 build {
-  sources = ["source.vagrant.debian11"]
+  sources = ["source.vagrant.debian12"]
 
   provisioner "shell" {
     execute_command = "echo 'vagrant' | {{ .Vars }} sudo -S -E bash '{{ .Path }}'"
@@ -33,16 +44,11 @@ build {
     ]
   }
 
-  post-processor "vagrant" {
-    provider_override   = "virtualbox"
-    keep_input_artifact = true
-    output              = "package.box"
-  }
-
-  post-processor "vagrant-cloud" {
-    access_token = "${var.access_token}"
-    box_tag      = "el8ctric/rancher"
-    version      = "0.1.${var.build}"
-    architecture = "amd64"
+  post-processor "vagrant-registry" {
+    client_id     = "${var.hcp_client_id}"
+    client_secret = "${var.hcp_client_secret}"
+    box_tag       = "el8ctric/rancher"
+    version       = "0.1.${var.build}"
+    architecture  = "amd64"
   }
 }

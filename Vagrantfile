@@ -50,7 +50,7 @@ Vagrant.configure(VAGRANFILE_API_VERSION) do |config|
     ###############################################################
     #        We use debian in production and so we do here        #
     ###############################################################
-    config.vm.box = "el8ctric/rancher"
+    config.vm.box = "generic/debian12"
     config.vm.synced_folder ".", "/vagrant", type: "virtualbox"
 
     ###############################################################
@@ -67,14 +67,6 @@ Vagrant.configure(VAGRANFILE_API_VERSION) do |config|
     config.hostmanager.ip_resolver = proc do |vm, resolving_vm|
         vm.provider.driver.read_guest_ip(1)
     end
-
-    config.vm.provision :shell,
-            :path => 'vagrant/wait-for-rancher.sh',
-            :run => 'always'
-
-    config.vm.provision :shell,
-        :path => 'vagrant/setup.sh',
-        :args => [PROJECT_DOMAIN]
 
     ### This needs to be set after all k8s stuff is up as otherwise we get an wrong IP
     if (not isBoxProvisioned)
